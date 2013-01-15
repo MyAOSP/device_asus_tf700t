@@ -14,21 +14,22 @@
 # limitations under the License.
 #
 
+# Audio Options
+USE_PROPRIETARY_AUDIO_EXTENSIONS := true
 BOARD_USES_GENERIC_AUDIO := false
-USE_CAMERA_STUB := false
+BOARD_USES_ALSA_AUDIO := false
+BOARD_USES_TINY_AUDIO_HW := false
+COMMON_GLOBAL_CFLAGS += -DMR0_AUDIO_BLOB
 
 # inherit from the proprietary version
 -include vendor/asus/tf700t/BoardConfigVendor.mk
 
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
-# Board nameing
+# Board naming
 TARGET_NO_RADIOIMAGE := true
 TARGET_BOARD_PLATFORM := tegra
 TARGET_BOOTLOADER_BOARD_NAME := cardhu
-
-#ICS Camera HAL
-COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB -DICS_AUDIO_BLOB
 
 # Target arch settings
 TARGET_NO_BOOTLOADER := true
@@ -48,6 +49,7 @@ BOARD_KERNEL_BASE := 0x10000000
 BOARD_KERNEL_PAGESIZE :=
 
 # EGL settings
+BOARD_EGL_NEEDS_LEGACY_FB := true
 BOARD_EGL_CFG := device/asus/tf700t/prebuilt/egl.cfg
 USE_OPENGL_RENDERER := true
 
@@ -58,6 +60,8 @@ BOARD_NO_ALLOW_DEQUEUE_CURRENT_BUFFER := true
 # Bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
+BOARD_BLUEDROID_VENDOR_CONF := device/asus/tf700t/bluetooth/vnd_tf700t.txt
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/asus/tf700t/bluetooth
 
 # Support for dock battery
 TARGET_HAS_DOCK_BATTERY := true
@@ -69,9 +73,6 @@ BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_bcmdhd
 BOARD_HOSTAPD_DRIVER        := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB   := lib_driver_cmd_bcmdhd
 BOARD_WLAN_DEVICE           := bcmdhd
-
-#new 
-#WIFI_DRIVER_MODULE_PATH     := "/system/lib/modules/bcmdhd.ko"
 WIFI_DRIVER_FW_PATH_PARAM   := "/sys/module/bcmdhd/parameters/firmware_path"
 WIFI_DRIVER_FW_PATH_STA     := "/system/vendor/firmware/bcm4330/fw_bcmdhd.bin"
 WIFI_DRIVER_FW_PATH_AP      := "/system/vendor/firmware/bcm4330/fw_bcmdhd_apsta.bin"
@@ -85,12 +86,12 @@ BOARD_USERDATAIMAGE_PARTITION_SIZE := 29850022707
 BOARD_FLASH_BLOCK_SIZE := 4096
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
 
-# Try to build the kernel
-TARGET_KERNEL_SOURCE := kernel/asus/tf700t
-TARGET_KERNEL_CONFIG := tf700t_bjr_defconfig
+# Build kernel from source
+#TARGET_KERNEL_SOURCE := kernel/asus/tf700t
+#TARGET_KERNEL_CONFIG := cyanogenmod_cardhu_defconfig 
 
 # Prebuilt Kernel Fallback
-#TARGET_PREBUILT_KERNEL := device/asus/tf700t/kernel
+TARGET_PREBUILT_KERNEL := device/asus/tf700t/kernel
 
 # Custom Tools
 TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/asus/tf700t/releasetools/tf700t_ota_from_target_files

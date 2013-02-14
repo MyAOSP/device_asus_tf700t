@@ -63,9 +63,6 @@ Usage:  ota_from_target_files [flags] input_target_files output_ota_package
   --override_device <device>
       Override device-specific asserts. Can be a comma-separated list.
 
-  --no_assert <true|false>
-      Including this will turn device asserts off.
-
 """
 
 import sys
@@ -89,7 +86,7 @@ except ImportError:
   from sha import sha as sha1
 
 import common
-import edify_generator
+import tf700t_edify_generator as edify_generator
 
 OPTIONS = common.OPTIONS
 OPTIONS.package_key = None
@@ -105,7 +102,6 @@ OPTIONS.worker_threads = 3
 OPTIONS.backuptool = False
 OPTIONS.modelidcfg = False
 OPTIONS.override_device = 'auto'
-OPTIONS.no_assert = False
 
 LOCAL_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 DEV_OUT_DIR = os.path.abspath(os.path.join(LOCAL_DIR, '../../../out/target/product/tf700t/'))
@@ -400,10 +396,8 @@ def WriteFullOTAPackage(input_zip, output_zip):
   #  ts = GetBuildProp("ro.build.date.utc", input_zip)
   #  script.AssertOlderBuild(ts)
 
-  if not OPTIONS.no_assert:
-    #AppendAssertions(script, input_zip)
-        device_specific.FullOTA_Assertions()
-
+  AppendAssertions(script, input_zip)
+  device_specific.FullOTA_Assertions()
   device_specific.FullOTA_InstallBegin()
 
   if OPTIONS.backuptool:
@@ -419,6 +413,7 @@ def WriteFullOTAPackage(input_zip, output_zip):
   if "selinux_fc" in OPTIONS.info_dict:
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
+  script.ForceUnmount("/system")
   script.FormatPartition("/system")
   script.Mount("/system")
   #script.UnpackPackageDir("recovery", "/system")
@@ -428,7 +423,7 @@ def WriteFullOTAPackage(input_zip, output_zip):
   script.MakeSymlinks(symlinks)
 
   prebuilt_path = os.path.join(DEV_OUT_DIR, "boot.img")
-
+  
   blob = common.File.FromLocalFile("boot.img.blob", prebuilt_path)
 
   #recovery_img = common.GetBootableImage("recovery.img", "recovery.img",
@@ -793,11 +788,6 @@ def main(argv):
       OPTIONS.modelidcfg = bool(a.lower() == 'true')
     elif o in ("--override_device"):
       OPTIONS.override_device = a
-    elif o in ("--no_assert"):
-      if a in ("on", "On", "true", "True", "yes", "Yes"):
-        OPTIONS.no_assert = True
-      else:
-        OPTIONS.no_assert = False
     else:
       return False
     return True
@@ -813,8 +803,7 @@ def main(argv):
                                               "worker_threads=",
                                               "aslr_mode=",
                                               "backup=",
-                                              "override_device=",
-                                              "no_assert="],
+                                              "override_device="],
                              extra_option_handler=option_handler)
 
   if len(args) != 2:

@@ -124,7 +124,7 @@ on boot
 
 # Power management settings
     chown system system /sys/module/cpu_tegra3/parameters/no_lp
-    write /sys/module/cpu_tegra3/parameters/no_lp 1
+    write /sys/module/cpu_tegra3/parameters/no_lp 0
     #write /sys/module/tegra3_emc/parameters/emc_enable 0
     #write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 1000000
 
@@ -201,12 +201,6 @@ on property:ro.debuggable=1
 # NTFS and exFAT support
     insmod /system/lib/tntfs.ko
     insmod /system/lib/texfat.ko
-
-# insmod cfg80211.ko for cfg80211 and P2P mode.
-    insmod /system/lib/modules/cfg80211.ko
-
-# insmod WiFi module
-    insmod /system/lib/modules/bcmdhd.ko
 
 # Touch
     start touch_update
@@ -348,14 +342,6 @@ service bugreport /system/bin/bugmailer.sh -b /system/media/audio/ui/Dock.ogg -e
     disabled
     oneshot
     keycodes 115 114
-
-# BCM
-service hciattach /system/bin/brcm_patchram_plus --enable_hci --scopcm=0,2,0,0,0,0,0,0,0,0 \
-    --baudrate 3000000 --use_baudrate_for_download --patchram /etc/firmware/BCM4330B1_002.001.003.0750.0820.hcd --enable_lpm --no2bytes --tosleep=5000 /dev/ttyHS2
-    class main
-    user root
-    group system bluetooth net_bt_admin misc
-    disabled
 
 # Start GPS daemon
   on boot

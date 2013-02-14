@@ -21,25 +21,29 @@ $(call inherit-product-if-exists, vendor/asus/tf700t/tf700t-vendor.mk)
 # Path to overlay files
 DEVICE_PACKAGE_OVERLAYS += device/asus/tf700t/overlay
 
+# Prebuilt kernel location
+ifeq ($(TARGET_PREBUILT_KERNEL),)
+        LOCAL_KERNEL := device/asus/tf700t/kernel
+else
+        LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
+endif
+
 # Files needed for boot image
 PRODUCT_COPY_FILES += \
+    $(LOCAL_KERNEL):kernel \
     $(LOCAL_PATH)/ramdisk/init.cardhu.rc:root/init.cardhu.rc \
     $(LOCAL_PATH)/ramdisk/init.cardhu.keyboard.rc:root/init.cardhu.keyboard.rc \
     $(LOCAL_PATH)/ramdisk/ueventd.cardhu.rc:root/ueventd.cardhu.rc \
     $(LOCAL_PATH)/ramdisk/init.cardhu.usb.rc:root/init.cardhu.usb.rc \
     $(LOCAL_PATH)/ramdisk/init.cardhu.cpu.rc:root/init.cardhu.cpu.rc \
-    $(LOCAL_PATH)/ramdisk/fstab.cardhu:root/fstab.cardhu
+    $(LOCAL_PATH)/prebuilt/fstab.cardhu:root/fstab.cardhu
 
 # Prebuilt configuration files
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/vold.fstab:system/etc/vold.fstab \
-    $(LOCAL_PATH)/configs/gpsconfig.xml:system/etc/gps/gpsconfig.xml \
-    $(LOCAL_PATH)/configs/audio_policy.conf:system/etc/audio_policy.conf \
+    $(LOCAL_PATH)/prebuilt/vold.fstab:system/etc/vold.fstab \
+    $(LOCAL_PATH)/prebuilt/gpsconfig.xml:system/etc/gps/gpsconfig.xml \
+    $(LOCAL_PATH)/prebuilt/audio_policy.conf:system/etc/audio_policy.conf \
     $(LOCAL_PATH)/configs/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf
-
-# Prebuilt binary files
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/vold/vold:system/bin/vold
 
 # Input device configuration files
 PRODUCT_COPY_FILES += \
@@ -47,6 +51,8 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/idc/elantech_touchscreen.idc:system/usr/idc/elantech_touchscreen.idc \
     $(LOCAL_PATH)/idc/elan-touchscreen.idc:system/usr/idc/elan-touchscreen.idc \
     $(LOCAL_PATH)/idc/panjit_touch.idc:system/usr/idc/panjit_touch.idc \
+    $(LOCAL_PATH)/idc/qwerty2.idc:system/usr/idc/qwerty2.idc \
+    $(LOCAL_PATH)/idc/qwerty.idc:system/usr/idc/qwerty.idc \
     $(LOCAL_PATH)/idc/raydium_ts.idc:system/usr/idc/raydium_ts.idc \
     $(LOCAL_PATH)/idc/sis_touch.idc:system/usr/idc/sis_touch.idc \
     $(LOCAL_PATH)/idc/Vendor_0457_Product_0817.idc:system/usr/idc/Vendor_0457_Product_0817.idc \
@@ -78,8 +84,10 @@ PRODUCT_COPY_FILES += \
 
 # Build characteristics setting 
 PRODUCT_CHARACTERISTICS := tablet
-PRODUCT_AAPT_CONFIG := normal large xlarge hdpi
-PRODUCT_AAPT_PREF_CONFIG := xlarge hdpi
+#PRODUCT_AAPT_CONFIG := normal hdpi xhdpi
+#PRODUCT_AAPT_PREF_CONFIG := hdpi
+PRODUCT_AAPT_CONFIG := xlarge hdpi mdpi
+PRODUCT_AAPT_PREF_CONFIG := hdpi
 
 # This device has enough space for precise dalvik
 PRODUCT_TAGS += dalvik.gc.type-precise
@@ -106,6 +114,24 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     Torch
 
+# Tegra 3 spacific overrides
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.tegra.nvmmlite=1 \
+    persist.sys.NV_FPSLIMIT=60
+
+# UI
+PRODUCT_PROPERTY_OVERRIDES += \
+    debug.performance.tuning=1 \
+    video.accelerate.hw=1 \
+    ro.kernel.android.checkjni=0 \
+    ro.kernel.checkjni=0 \
+    ro.mot.eri.losalert.delay=1000 \
+    persist.sys.strictmode.visual=0 \
+    persist.sys.strictmode.disable=1 \
+    dalvik.vm.execution-mode=int:jit \
+    com.ti.omap_enhancement=true \
+    windowsmgr.max_events_per_sec=300
+
 # Infinity specific properties
 PRODUCT_PROPERTY_OVERRIDES := \
     wifi.interface=wlan0 \
@@ -115,18 +141,12 @@ PRODUCT_PROPERTY_OVERRIDES := \
 
 # media files
 PRODUCT_COPY_FILES += \
-    device/asus/tf700t/configs/media_codecs.xml:system/etc/media_codecs.xml \
-    device/asus/tf700t/configs/media_profiles.xml:system/etc/media_profiles.xml
+    device/asus/tf700t/media_codecs.xml:system/etc/media_codecs.xml \
+    device/asus/tf700t/media_profiles.xml:system/etc/media_profiles.xml
 
 # GPS configuration
 PRODUCT_COPY_FILES += \
     device/asus/tf700t/configs/gps.conf:system/etc/gps.conf
-
-# for bugmailer
-PRODUCT_PACKAGES += send_bug
-PRODUCT_COPY_FILES += \
-    system/extras/bugmailer/bugmailer.sh:system/bin/bugmailer.sh \
-    system/extras/bugmailer/send_bug:system/bin/send_bug
 
 # Inherit tablet dalvik settings
 $(call inherit-product, frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk)
